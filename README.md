@@ -289,6 +289,23 @@ Restart Claude Desktop, and ask questions like:
 - Ollama requires a model that supports tool calling. Some models may not support tools.
 
 ---
+## Design decisions (in plain words)
+
+- **Why MCP and why stdio (not HTTP)**: I wanted this project to plug into MCP clients/agents easily, so I kept it as an MCP server over stdio. It’s simpler to run locally, has less “server setup” overhead, and fits the tool-calling flow well.
+
+- **Loading the DB files into memory**: The DBs here are flat text files. I load them once on startup and keep the data in memory so every tool call is fast and consistent, without re-reading files on every request.
+
+- **Indexes for fast lookups**: On top of the in-memory arrays, I build a few simple `Map` indexes (vendor by id, vulnerability by CVE, vulnerabilities by vendor). That way, common queries (get vendor, get CVE, vendor stats) don’t require scanning the entire dataset.
+
+- **Parsing based on the file metadata**: The files include `# VERSION` and `# FORMAT`. I parse that metadata so the code is more resilient if the column order changes or new columns are added, instead of hardcoding “column 3 is X”.
+
+- **Input validation because an LLM calls tools**: Since tools can be called by an LLM, inputs can be messy (wrong enum, negative offset, invalid dates). I validate inputs up front (with Zod) so failures are clear and predictable instead of producing weird partial results.
+
+- **Pagination everywhere**: I used `limit/offset` consistently so responses stay bounded and clients can page through results safely.
+
+- **Keeping layers separate**: I tried to keep parsing, query/index logic, and the MCP server layer separate so it’s easier to change one part later (e.g., replace the flat files with a real DB) without rewriting everything.
+
+---
 
 ## If I had more time
 
