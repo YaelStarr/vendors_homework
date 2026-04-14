@@ -222,8 +222,22 @@ Tip: For questions like “in the past year / בשנה האחרונה”, the ag
 
 ### Anthropic provider (optional)
 
+You can configure Anthropic via environment variables or a local `.env` file (loaded automatically by the Agent CLI).
+
+Recommended `.env` (project root):
+
+```dotenv
+ANTHROPIC_API_KEY=YOUR_KEY
+# Optional: override the model if needed.
+# If you get a 404 "model: ...", it means that model isn't available to your key/account.
+ANTHROPIC_MODEL=claude-opus-4-6
+```
+
+Or set env vars in PowerShell:
+
 ```powershell
 $env:ANTHROPIC_API_KEY="YOUR_KEY"
+$env:ANTHROPIC_MODEL="claude-opus-4-6"
 npm run build
 npm run agent -- --provider anthropic "How many critical vulnerabilities are still open?"
 ```

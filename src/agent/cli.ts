@@ -60,7 +60,7 @@ const main = async () => {
     console.error(`Unknown --provider "${provider}". Use ollama or anthropic.`);
     process.exit(1);
   }
-  const anthropicModel = (process.env.ANTHROPIC_MODEL ?? "claude-3-5-sonnet-latest").trim();
+  const anthropicModel = (process.env.ANTHROPIC_MODEL ?? "claude-opus-4-6").trim();
   const ollamaModel = (process.env.OLLAMA_MODEL ?? "llama3.1").trim();
   const maxTurns = Number.parseInt(String(flags.get("maxTurns") ?? "8"), 10);
 
