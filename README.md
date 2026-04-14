@@ -292,10 +292,13 @@ Restart Claude Desktop, and ask questions like:
 
 ## If I had more time
 
-- Proper full-text search indexing
-- Incremental reload / file watching for DB updates
-- Unit tests for parsing + query logic
-- Small benchmark + observability (structured logs/metrics)
+- **Faster, smarter search (full-text search)**: Right now the search is basically a simple substring match (like `includes`) over text fields. It works, but it’s not “smart” search and it won’t scale as well when the dataset grows. With more time, I would add a proper full‑text search index (or integrate a dedicated search engine) to improve both relevance and performance on larger data.
+
+- **Auto-reload when DB files change**: The server currently loads `vendors.db` and `vulnerabilities.db` on startup and keeps everything in memory. If the files change, you need to restart the server to see the updates. I’d add file watching (or an incremental reload mechanism) so changes to the DB files refresh the in-memory state and indexes without a restart.
+
+- **Unit tests for parsing + query logic**: There’s a lot of parsing logic for the legacy text format and filtering/aggregation logic for queries. I’d add unit tests that cover edge cases (invalid lines, missing fields, date ranges, pagination, stats calculations) to increase confidence and prevent regressions when refactoring.
+
+- **Benchmarking + observability**: To understand performance bottlenecks and debug issues faster, I’d add a small benchmark suite (load time, search time, aggregation time) and basic observability (structured logs/metrics like tool name, duration, result counts, error rates). That would make performance improvements measurable and troubleshooting much easier.
 
 ---
 
