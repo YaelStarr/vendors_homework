@@ -1,0 +1,30 @@
+{
+  "name": "vendors_homework",
+  "version": "1.0.0",
+  "description": "",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "dev": "node --loader ts-node/esm src/mcp/server.ts",
+    "build": "tsc",
+    "start": "node dist/mcp/server.js",
+    "agent": "node dist/agent/cli.js",
+    "agent:ollama": "node dist/agent/cli.js --provider ollama",
+    "agent:anthropic": "node dist/agent/cli.js --provider anthropic",
+    "agent:dev": "node --loader ts-node/esm src/agent/cli.ts",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.88.0",
+    "@modelcontextprotocol/sdk": "^1.29.0",
+    "zod": "^4.3.6"
+  },
+  "devDependencies": {
+    "@types/node": "^25.6.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^6.0.2"
+  }
+}

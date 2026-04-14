@@ -1,0 +1,34 @@
+### Node / npm
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+### TypeScript build output
+dist/
+*.tsbuildinfo
+
+### Environment / secrets
+.env
+.env.*
+
+### OS / editor noise
+.DS_Store
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+### VS Code / Cursor
+.vscode/
+.cursor/
+
+### Logs
+logs/
+*.log
+
+### Temporary files
+tmp/
+temp/
+*.tmp
+
