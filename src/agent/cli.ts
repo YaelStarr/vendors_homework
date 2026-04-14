@@ -1,3 +1,4 @@
+import "dotenv/config";
 import path from "node:path";
 
 import { runAnthropicAgent } from "./agent.js";
@@ -10,6 +11,10 @@ const parseArgs = (argv: string[]) => {
 
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
+    if (a === "--") {
+      positional.push(...argv.slice(i + 1));
+      break;
+    }
     if (a.startsWith("--")) {
       const key = a.slice(2);
       const next = argv[i + 1];

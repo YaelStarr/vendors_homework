@@ -22,6 +22,28 @@ const ensureApiKey = () => {
   return key;
 };
 
+const isMcpToolErrorText = (text: string) => {
+  const t = text.toLowerCase();
+  return t.startsWith("mcp error") || t.includes("input validation error") || t.includes("error -32602");
+};
+
+const coerceNumericArgs = (input: unknown) => {
+  if (!input || typeof input !== "object" || Array.isArray(input)) return input;
+  const out: Record<string, unknown> = { ...(input as Record<string, unknown>) };
+  const numericKeys = ["limit", "offset", "min_cvss", "max_cvss", "founded"];
+  for (const k of numericKeys) {
+    const v = out[k];
+    if (typeof v === "string") {
+      const trimmed = v.trim();
+      if (trimmed.length > 0 && /^-?\d+(\.\d+)?$/.test(trimmed)) {
+        const n = Number(trimmed);
+        if (Number.isFinite(n)) out[k] = n;
+      }
+    }
+  }
+  return out;
+};
+
 export const runAnthropicAgent = async (args: {
   question: string;
   mcp: McpConnection;
@@ -45,13 +67,15 @@ export const runAnthropicAgent = async (args: {
           text:
             "You are a security analyst assistant. Answer in Hebrew.\n" +
             "Use the provided tools when needed to look up vendors/vulnerabilities.\n" +
-            "If a tool call returns JSON, use it as the source of truth.\n\n" +
+            "If a tool call returns JSON, use it as the source of truth.\n" +
+            "If the user asks relative time ranges (e.g. 'last year', 'past 30 days', 'בשנה האחרונה'), call get_current_date first and derive explicit YYYY-MM-DD bounds.\n\n" +
             `Question: ${args.question}`,
         },
       ],
     },
   ];
 
+  let lastTurnHadToolError = false;
   for (let turn = 0; turn < maxTurns; turn++) {
     const resp = await anthropic.messages.create({
       model,
@@ -76,14 +100,33 @@ export const runAnthropicAgent = async (args: {
         .map((c: any) => c.text)
         .join("\n")
         .trim();
+      if (lastTurnHadToolError) {
+        messages.push({
+          role: "user",
+          content: [
+            {
+              type: "text",
+              text:
+                "Your previous tool call failed (validation or execution error). " +
+                "You MUST call the relevant tool again with corrected arguments (e.g. limit must be >= 1). " +
+                "Do not guess or answer from memory until you have a successful tool result.",
+            },
+          ],
+        });
+        lastTurnHadToolError = false;
+        continue;
+      }
       trace.push({ type: "final", text });
       return { answer: text, trace };
     }
 
+    lastTurnHadToolError = false;
     for (const tu of toolUses) {
-      trace.push({ type: "tool_call", name: tu.name, input: tu.input });
-      const result = await callMcpTool(args.mcp, tu.name, tu.input);
+      const input = coerceNumericArgs(tu.input);
+      trace.push({ type: "tool_call", name: tu.name, input });
+      const result = await callMcpTool(args.mcp, tu.name, input);
       trace.push({ type: "tool_result", name: tu.name, outputText: result.text });
+      if (isMcpToolErrorText(result.text)) lastTurnHadToolError = true;
 
       messages.push({
         role: "user",

@@ -1,3 +1,4 @@
+import "dotenv/config";
 import path from "node:path";
 import * as z from "zod/v4";
 
@@ -102,6 +103,32 @@ const main = async () => {
       if (!vuln) return { content: [{ type: "text", text: jsonText({ error: "Vulnerability not found", cve_id }) }] };
       const vendor = db.vendorById.get(vuln.vendor_id) ?? null;
       return { content: [{ type: "text", text: jsonText({ ...vuln, vendor }) }] };
+    }
+  );
+
+  server.registerTool(
+    "get_current_date",
+    {
+      title: "Get current date/time",
+      description:
+        "Return the current local date/time of the machine running the MCP server. Use this to resolve relative time phrases like 'last year' or 'in the past 30 days'.",
+      inputSchema: {},
+    },
+    async () => {
+      const now = new Date();
+      return {
+        content: [
+          {
+            type: "text",
+            text: jsonText({
+              now_iso: now.toISOString(),
+              today: now.toISOString().slice(0, 10),
+              now_ts: now.getTime(),
+              timezone_offset_minutes: now.getTimezoneOffset(),
+            }),
+          },
+        ],
+      };
     }
   );
 
